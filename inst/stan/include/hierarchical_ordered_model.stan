@@ -1,3 +1,4 @@
+
 matrix[Q, Q] G;
 if (n_coef > 1) {
   G = block_diag(R, n_levels);
