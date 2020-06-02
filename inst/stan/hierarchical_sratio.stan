@@ -7,6 +7,6 @@ functions {
 #include /include/hierarchical_ordered_parameters.stan
 
 model {
-#include /include/hierarchical_ordered_pmodel.stan
+#include /include/hierarchical_ordered_model.stan
   y ~ sratio(X * beta + Z * gamma, threshold);
 }

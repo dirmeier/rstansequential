@@ -1,6 +1,9 @@
-#' The 'rstansequential' package.
+#'  Hierarchical sequential regression models using Stan
 #'
-#' @description A DESCRIPTION OF THE PACKAGE
+#' @description The `rstansequential` package fits hiearchical sequential
+#'  regression models using Stan. The package was created for a case study and
+#'  only offers little functionality other than fitting sequential models for
+#'  regression.
 #'
 #' @docType package
 #' @name rstansequential-package
@@ -9,8 +12,5 @@
 #' @import methods
 #' @import Rcpp
 #' @importFrom rstan sampling
-#'
-#' @references
-#' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.19.3. https://mc-stan.org
 #'
 NULL
