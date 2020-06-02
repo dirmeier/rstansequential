@@ -2,7 +2,7 @@
 
 [![Project
 Status](http://www.repostatus.org/badges/latest/concept.svg)](http://www.repostatus.org/#concept)
-[![ci](https://travis-ci.org/dirmeier/rstansequential.svg?branch=master)](https://travis-ci.org/dirmeier/rstansequential))
+[![ci](https://travis-ci.org/dirmeier/rstansequential.svg?branch=master)](https://travis-ci.org/dirmeier/rstansequential)
 
 > Ordinal sequential regression models in R
 

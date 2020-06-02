@@ -8,27 +8,32 @@ model using Stan.}
 fit(formula, data, family = c("cumulative", "sratio", "cratio"), ...)
 }
 \arguments{
-\item{formula}{an \code{lme4}-style formula}
+\item{formula}{an `lme4`-style formula}
 
-\item{data}{a data frame containing the variables specified in \code{forumla}}
+\item{data}{a data frame containing the variables specified in `forumla`}
 
 \item{family}{name of the family to be used}
 
 \item{...}{additional parameters passed to \code{\link[rstan]{sampling}}}
 }
 \value{
-returns a \code{\link[rstan]{stan.fit}} object
+returns a \code{\link[rstan]{stanfit}} object
 }
 \description{
 Infers posterior distributions of the parameters
-of a sequential regression model using
-Stan's dynamic Hamiltonian Monte Carlo sampler.
+ of a sequential regression model using
+ Stan's dynamic Hamiltonian Monte Carlo sampler.
 }
 \examples{
-data("tonsil")
-fit(tonsil ~ carrier, tonsil, "sratio", iter = 1000, chains = 2)
-
-data("wine")
+data(wine)
 fit(rating ~ temperature + (1 | judge), wine, iter = 1000, chains = 2)
 
+}
+\references{
+McCullagh, P. (1980), Regression models for ordinal data,
+\emph{Journal of the Royal Statistical Society: Series B (Methodological),
+ 42(2)}
+
+Tutz, G. (1991), Sequential models in categorical regression,
+ \emph{Computational Statistics & Data Analysis, 11(3)}
 }

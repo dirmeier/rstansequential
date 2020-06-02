@@ -6,8 +6,8 @@
 \alias{rstansequential}
 \title{Hierarchical sequential regression models using Stan}
 \description{
-The \code{rstansequential} package fits hiearchical sequential
-regression models using Stan. The package was created for a case study and
-only offers little functionality other than fitting sequential models for
-regression.
+The `rstansequential` package fits hiearchical sequential
+ regression models using Stan. The package was created for a case study and
+ only offers little functionality other than fitting sequential models for
+ regression.
 }
