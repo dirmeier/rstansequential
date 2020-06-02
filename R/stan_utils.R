@@ -28,3 +28,9 @@ make_standata <- function(formula, data, family = c("cumulative", "sratio", "cra
 
   stan.dat
 }
+
+
+stan_model <- function(family= c("cumulative", "sratio", "cratio"),
+                       is.hierarchical=FALSE) {
+  stanmod
+}

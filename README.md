@@ -1,11 +1,11 @@
-# pystansequential
+# Sequential regression models
 
 
 [![Project
 Status](http://www.repostatus.org/badges/latest/concept.svg)](http://www.repostatus.org/#concept)
 [![ci](https://github.com/dirmeier/pystansequential/workflows/ci/badge.svg)](https://github.com/dirmeier/pystansequential/actions/)
 
-> Ordinal sequential regression models in Python
+> Ordinal sequential regression models in R
 
 ## About
 
@@ -14,16 +14,16 @@ are a special type of ordinal regression models, but additionally assume that da
 sequentially. Arguably this should make them often more appropriate to use for biological and medical applications than 
 conventional ordinal models.
 
-You can find the case study [here](https://dirmeier.github.io/pystansequential/index.html). The case study uses 
-[PyStan](https://pystan.readthedocs.io/en/latest/) for data analysis.
+You can find the case study [here](https://dirmeier.github.io/rstansequential/index.html). The case study uses 
+[rstan](https://github.com/stan-dev/rstan) for data analysis.
 
 ## Installation
 
-You can install `pystansequential` using the latest GitHub 
-[release](https://github.com/dirmeier/pystansequential/releases/):
+You can install `rstansequential` using the latest GitHub 
+[release](https://github.com/dirmeier/rstansequential/releases/):
 
-```bash
-python -m pip install git+https://github.com/dirmeier/pystansequential.git
+```r
+remotes::install_github("dirmeier/rstansequential@v0.1.0")
 ```
 
 ## Author
