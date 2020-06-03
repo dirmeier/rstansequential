@@ -1,5 +1,5 @@
 ---
-title: "On Sampling"
+title: "On sequential regression models"
 bibliography: ./references.bib
 link-citations: false
 output:
