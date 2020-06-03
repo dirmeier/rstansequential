@@ -1,4 +1,3 @@
-
 functions {
 #include /include/block_diag.stan
 #include /include/cratio.stan

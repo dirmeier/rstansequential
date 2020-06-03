@@ -1,4 +1,3 @@
-
 real marg_prob_cumul_logit(int y, real eta, vector c, int K) {
   real val = 0;
    if (y == 1) {

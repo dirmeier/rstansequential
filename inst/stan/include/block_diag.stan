@@ -1,4 +1,3 @@
-
 matrix block_diag(matrix qq, int n) {
   int r = 1;
   int sz = rows(qq);

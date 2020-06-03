@@ -5,7 +5,7 @@ link-citations: false
 output:
   html_document:
     theme: lumen
-    css: theme.css
+    css: custom.css
     toc: yes
     toc_depth: 2
     toc_float:
@@ -15,6 +15,358 @@ output:
     highlight: pygments
 ---
 
-```{r knitr_init, echo=FALSE, cache=FALSE, message=FALSE}
+```{r knitr_init, include=FALSE, echo=FALSE, cache=FALSE, message=FALSE}
+knitr::opts_chunk$set(comment=NA, warning = FALSE, error = FALSE, fig.align = "center")
+```
+
+Sequential regression models are a a special case of ordinal models, where the different categories can only be reached one after another, i.e., sequentially. Sequential response mechanisms frequently occur in biological and medical settings, for example titer data or MIC data, but haven't received much attention in applied research. In this case study, we analyse an ordinal data sets for which an underlying sequential response mechanism can be assumed and compare the sequential model to the more common cumulative model.
+
+The relevant code can be found [here](https://github.com/dirmeier/rstansequential). It is an R-package that wraps the functions for convencience. The package relies on [`rstan`](https://github.com/stan-dev/rstan/) for inference.
+
+```{r}
+suppressMessages({
+  library(tidyverse)
+  library(colorspace)
+  library(patchwork)
+  library(bayesplot)
+
+  library(rstan)
+  library(loo)
+  library(rstansequential)
+})
+
+options(mc.cores = max(1, parallel::detectCores() - 1))
+```
+
+# Cumulative models
+
+The conventional cumulative model introduced by @McCullagh1980 is probably the most frequently encountered ordinal regression model. It assumes a response variable $Y$ with $K$ ordered categories $k = 1, \dots, K$ and ordinal probabilities $\pi_1, \dots, \pi_K$. The model is motivated by a latent continuous random process $\tilde{Y}$
+
+$$\begin{align}
+\tilde{Y} & = -\mathbf{x}^T \boldsymbol \beta + \epsilon \\
+\epsilon & \sim f
+\end{align}
+$$
+
+for some density $f$. The latent variable is related to the observed category with a threshold mechanism
+
+$$\begin{align}
+Y = k \Leftrightarrow \theta_{k - 1} < \tilde{Y} \le \theta_{k}, \; k = 1, \dots, K
+\end{align}
+$$
+
+for a set of latent ordered continuous cutpoints $\theta_0, \dots, \theta_K$ with $\theta_0 = -\infty$ and $\theta_K = \infty$. From this assumption one obtains
+
+$$\begin{align}
+P(Y \le  k) & = P(\tilde{Y} \le \theta_k) \\
+& = P(-\mathbf{x}^T \boldsymbol \beta +\epsilon \le \theta_k) \\
+& = P(\epsilon \le \theta_k + \mathbf{x}^T \boldsymbol \beta) \\
+&= F(\theta_k + \mathbf{x}^T \boldsymbol \beta),
+\end{align}$$
+
+which gives rise to the name *cumulative* (because of the cumulative probabilities). Computing the ordinal probabilities form this gives
+
+$$\begin{align}
+\pi_k & = F(\theta_k + \mathbf{x}^T \boldsymbol \beta) - F(\theta_{k - 1} + \mathbf{x}^T \boldsymbol \beta)
+\end{align}$$
+
+The choice of the distribution function $F$ determines which model we obtain. The cumulative *logit* model (i.e., choosing a logit link function) is obtained if we choose a logistic distribution function
+
+$$\begin{align}
+P(Y \le k) = \frac{1}{1 + \exp(-\theta_k - \mathbf{x}^T \boldsymbol \beta)}
+\end{align}$$ 
+
+or equivalently a *logit* link which gives us the *cumulative* log odds
+
+$$\begin{align}
+F^{-1}\left( P(Y \le k) \right) = \log \frac{P(Y \le k)}{1 - P(Y \le k)} = \theta_k + \mathbf{x}^T \boldsymbol \beta
+\end{align}$$ 
+
+If we look at the odds ratio of the event $Y \le k$ for two populations characterized by covariable values $\mathbf{x}$ and $\mathbf{\tilde{x}}$
+
+$$\begin{align}
+\frac{P(Y \le k \mid \mathbf{x})\ / \ P(Y > k  \mid \mathbf{x}) }{P(Y \le k \mid \mathbf{\tilde{x}})\ / \ P(Y > k 
+\mid \mathbf{\tilde{x}}) } & = \frac{ \exp\left( \theta_k + \mathbf{x}^T \boldsymbol \beta \right)}{\exp\left(\theta_k + \mathbf{\tilde{x}}^T \boldsymbol \beta \right)} \\
+& = \exp\left( \left(  \mathbf{x} - \mathbf{\tilde{x}}\right)^T \boldsymbol \beta  \right)
+\end{align}$$ 
+
+we see that the ratio of odds is the same regardless of the category. This assumption is also called *proportional odds* and the model *proportional odds model*. The derivation is crucial for the interpretation of coefficients and makes it especially simple, because it says that the ratio of the cumulative odds of two populations are the same irrespective of the category. Hence we can disregard the categories when we interpret coefficients.
+
+# Sequential models
+
+In some applications if makes more sense to assume that the categories can only be reached sequentially. For instance, to gain the title of "PhD" in the ordering of degrees "Bachelor < Master < PhD" first Bacherlor and Master titles have to be obtained. Analogously, if the response variable is the number of guitars someone owns, one can assume that the guitars have been bought successively, and not, as a cumulative model assumes, all at the same time. Thus, the number of guitars can be considered to be a "sequential" ordinal random variable. The sequential model has (afaik) been introduced by @Tutz1991. In the literature, multiple names has been used for sequential regression models. Tutz also calls them *continuation ratio* models. @Yee2010 calls them *stopping ratio* models which seems to be a better fitting name.
+
+As in the cumulative model, we assume a latent continuous process $\tilde{Y} = - \mathbf{x}^T \boldsymbol \beta + \epsilon$. For the sequential model it relates to the observed random variable $Y$ via
+
+$$\begin{align}
+P(Y =  k \mid Y \ge k) =  F(\theta_k + \mathbf{x}^T \boldsymbol \beta) \\
+\end{align}
+$$
+
+As above, $k = 1, \dots, K$, $\theta_0, \dots, \theta_K$ are cutpoints with $\theta_0 = -\infty$ and $\theta_K = \infty$ and $F$ is a cumulative distribution function.
+
+In order to reach a category $k$, $Y$ has to go through all the previous categories. For instance, for any $Y$, we first compute
+
+$$\begin{align}
+P(Y = 1) = F(\theta_1 + \mathbf{x}^T \boldsymbol \beta)
+\end{align}$$ 
+
+and stop the process if the Bernoulli experiment is successful. If it is not successful, i.e, $Y \ge 2$, we do another experiment between $Y=2$ and $Y >2$:
+
+$$\begin{align}
+P(Y = 2 \mid Y \ge 2) = F(\theta_2 + \mathbf{x}^T \boldsymbol \beta)
+\end{align}$$ 
+
+If this is successful, we stop. Otherwise we continue the process. At the end of the process, the ordinal propability for category $k$ is
+
+$$\begin{align}
+\pi_k & = (Y = k \mid Y \ge k) \prod_{l = 1}^{k - 1} 1 - P(Y = l \mid Y \ge l) \\
+& = F(\theta_k + \mathbf{x}^T \boldsymbol \beta) \prod_{l = 1}^{k - 1} 1 - F(\theta_l + \mathbf{x}^T \boldsymbol \beta)
+\end{align}$$
+
+As for the cumulative model, the most frequent choice of $F$ is probably the cumulative distribution function of the logistic distribution. Hence
+
+$$\begin{align}
+P(Y =  k \mid Y \ge k) = \frac{1}{1 + \exp(-\theta_k - \mathbf{x}^T \boldsymbol \beta)}
+\end{align}$$ 
+
+or equivalently the logit
+
+$$\begin{align}
+F^{-1}\left( Y =  k \mid Y \ge k \right) = \log \frac{P(Y =  k \mid Y \ge k)}{1 - P(Y =  k \mid Y \ge k)} = \theta_k + \mathbf{x}^T \boldsymbol \beta
+\end{align}$$ 
+
+The logit is a ratio of the probability that the respose category *stops* at $k$ and the probability of the categories $\{k + 1, \dots, K \}$. As in the cumulative model, the odds ratio does not depend on the category which makes the model *a* proportional odds model as well.
+
+# Wine tasting data
+
+We apply the two models above to a wine data set from @Randall1989 and @Tutz1996 where nine judges assessed the bitterness of wine. When tasting the wines judges gave a statement about the bitterness of wine on a
+scale from least to most bitter. I extracted the data from the papers and put added them to the `rstansequential` package. Let's visualize the data first.
+
+```{r}
+data(wine)
+head(wine)
+```
+
+The response `rating` determines the bitterness of the wine from least to most bitter. When the grapes were crushed `temperature` could be controlled and set to either `low` or `high`. Furthermore, `contact` determines whether grapes had contact to the skin. For each treatment combination two `bottles` have been fermented. 
+
+I first pivot the data frame around the response `rating` such that we can nicely plot it.
+
+```{r, fig.align='center'}
+wide.wine <- wine %>%
+  dplyr::select(-judge) %>%
+  tidyr::pivot_longer(-rating, names_to="covariable", values_to = "value")
+
+g <- ggthemes::theme_tufte() +
+  ggplot2::theme(axis.title = element_blank(), 
+                 strip.text = element_text(size=12))
+
+ggplot2::ggplot(wide.wine) +
+  ggplot2::geom_histogram(
+    aes(x=value, fill=rating), 
+    color="black", 
+    stat="count", 
+    position = "dodge") +
+  colorspace::scale_fill_discrete_sequential(c1=50, c2=80, l1=30, l2=80, alpha=0.75) + 
+  ggplot2::facet_wrap(. ~ covariable, nrow = 3, scales = "free") +
+  g
+```
+
+The bars show the ratings of the independent judges given the covariables `bottle`, `contact` and `temperature`.  For the second and third plot, i.e., `contact=yes` and `temperature=high` the ratings seem higher than for the other levels. In order to account for heterogeneity of the judges, we should assume that each has her own sensitivity for bitterness of the wines resulting in correlation of the errors. Hence, we add a group-level coefficient, such that the latent process becomes
+
+$$\begin{align}
+\tilde{Y}_j = - \mathbf{x}^T \boldsymbol \beta - \gamma_j + \epsilon,
+\end{align}$$ 
+
+for judges $j = 1, \dots, 9$. The vector $\mathbf{x}$ is a vector of the dummy encoded covariables `contact`, `bottle` and `temperature` and $\gamma_j$ are group-specific intercepts. In a recent case study I explained hierarchical models in more detail ([link](https://dirmeier.github.io/mixed-models/index.html)) so have a look if this notation is unclear.
+
+# Stan files
+
+The stan models for both the cumulative and the sequential models are with the exception of the likelihood the same. The stan code for the cumulative log probability mass function is fairly short:
+
+```{r}
+cat(
+  readLines(
+    system.file(file.path("stan", "include", "cumulative.stan"), 
+                package = "rstansequential")
+  ),
+  sep="\n"
+)
+```
+
+Analogously, the probability mass function of the sequential model looks like this:
+
+```{r}
+cat(
+  readLines(
+    system.file(file.path("stan", "include", "sratio.stan"), 
+                package = "rstansequential")
+  ),
+  sep="\n"
+)
+```
+
+We plug each of these files into the main Stan file, which for the cumulative model looks like this:
+
+```{r}
+cat(
+  readLines(
+    system.file(file.path("stan", "hierarchical_cumulative.stan"), 
+                package = "rstansequential")
+  ),
+  sep="\n"
+)
+```
+
+The `data` block is fairly obvious: it defines the data passed to Stan. The `parameters` and `transformed parameter` blocks defined the model parameters such as coefficients (`beta` and `gamma`), standard deviations (`sigma`) and, in case a group-level effect has multiple coefficients, a correlation matrix (`Omega`). Note that my implementation could be made more efficient, but it the "general" form of a mixed-model in matrix notation and suffices for demonstration. See, for instance, my [case study](https://dirmeier.github.io/mixed-models/index.html)).
+
+The `model` block defines the actual model. We use a normal prior for the population-level coefficients, an LKJ prior for the correlation matrix, and a multivariate normal for the group-level coefficients to be able to model their correlations. The likelihood is then the cumulative or the sratio pmf from above.
+
+# Cumulative model fit
+
+With the theory derived, the linear predictor constructed and the stan files implemented, we can fit the models. Fitting the model can be done like this using `rstansequential` (we set `refresh=-1` to avoid most of the output of `rstan`):
+
+```{r}
+wine_fit_cumulative <- rstansequential::fit(
+  rating ~ bottle + contact + temperature + (1 | judge), 
+  wine, 
+  family="cumulative",
+  refresh=-1,
+  seed=23L
+)
+
+print(wine_fit_cumulative, pars = c("threshold", "beta", "gamma", "sigma"))
+```
+
+The fit shows (from top to bottom), the estimates for the four cutpoints (called threshold here). We obtain $c=4$ cutpoints since we used $K = c + 1$ categories. The next set of parameters are the coefficients of the covariables `bottle=2`, `contact=yes` and  `temperature=high`. Note that we do not have intercepts in the model matrix. The rest are the coefficients for the group-level intercepts and their standard deviation.
+
+The effective sample sizes are decent given that we used a centered parameterization and the R-hats are optimal. Before we continue, we plot the traces and histograms of posteriors, and HMC energy diagnostics.
+
+
+```{r, message=FALSE, warning=FALSE, fig.width=12, fig.height=4}
+trace.plot <- bayesplot::mcmc_trace(wine_fit_cumulative, regex_pars = "beta") 
+hist.plot  <- bayesplot::mcmc_hist(wine_fit_cumulative, regex_pars = "beta")
+
+(hist.plot + g) + (trace.plot + g)
+```
+
+The HMC energy diagnostics consists of two histograms per chain. Rougly speaking, if the two histograms overlap the HMC will rapidly explore the target distribution. If they don't overlap, the sampler may not sufficiently explore the tails of the distribution and autocorrelation of the chain is large.
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+params <- bayesplot::nuts_params(wine_fit_cumulative)
+bayesplot::mcmc_nuts_energy(params) + g
+```
+
+# Sequential model fit
+
+We now fit the sequential model. To do that we just change the family to `sratio` from `cumulative`.
+
+```{r}
+wine_fit_sratio <- rstansequential::fit(
+  rating ~ bottle + contact + temperature + (1 | judge), 
+  wine, 
+  family="sratio",
+  refresh=-1,
+  seed=23L
+)
+
+print(wine_fit_sratio, pars = c("threshold", "beta", "gamma", "sigma"))
+```
+
+The number of parameters and their names are the same as for the cumulative model, only their interpretation is different. Before we interpret them, we again plot traces and histograms of the posteriors.
+
+```{r, message=FALSE, warning=FALSE, fig.width=12, fig.height=4}
+trace.plot <- bayesplot::mcmc_trace(wine_fit_sratio, regex_pars = "beta") 
+hist.plot  <- bayesplot::mcmc_hist(wine_fit_sratio, regex_pars = "beta")
+
+(hist.plot + g) + (trace.plot + g)
+```
+
+As before, we check the energy distributions, too.
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+params <- bayesplot::nuts_params(wine_fit_sratio)
+bayesplot::mcmc_nuts_energy(params) + g
+```
+
+# Interpretation of coefficients
+
+While the coefficients of the two models are fairly similar, the major difference lies in their interpretation. For comparison the means of the coefficients are shown below:
+
+```{r}
+parse.summary <- function(fit, name) {
+  summ <- data.frame(
+    mean = rstan::summary(fit, pars="beta")$summary[, "mean"],
+    model = name,
+    feature = c("bottle=2", "contact=yes", "temperature=high")
+  )
+  
+  summ
+}
+
+cumulative.summary  <- parse.summary(wine_fit_cumulative, "cumulative")
+sratio.summary  <- parse.summary(wine_fit_sratio, "sequential")
+
+rbind(cumulative.summary, sratio.summary) %>%
+  tidyr::pivot_wider(values_from = "mean", names_from="feature")
 
 ```
+
+For the cumulative model the coefficients refer to the cumulative odds ratio
+
+$$\begin{align}
+\frac{P(Y \le k \mid \mathbf{x})\ / \ P(Y > k  \mid \mathbf{x}) }{P(Y \le k \mid \mathbf{\tilde{x}})\ / \ P(Y > k 
+\mid \mathbf{\tilde{x}}) } 
+& = \exp\left( \left(  \mathbf{x} - \mathbf{\tilde{x}}\right)^T \boldsymbol \beta  \right)
+\end{align}$$ 
+
+while they refer to a stopping odds ratio for the sequential model
+
+$$\begin{align}
+\frac{P(Y = k \mid Y \ge k, \mathbf{x})\ / \ P( Y > k \mid Y \ge k, \mathbf{x}) }{P(Y = k \mid Y \ge k, \mathbf{\tilde{x}})\ / \ P(Y > k \mid Y \ge k, \mathbf{\tilde{x}}) } 
+& = \exp\left( \left(  \mathbf{x} - \mathbf{\tilde{x}}\right)^T \boldsymbol \beta  \right)
+\end{align}$$ 
+
+For instance, for the cumulative model for the covariable `temperature` has the odds ratio
+
+$$\begin{align}
+\frac{P(Y \le k \mid temperature=high)\ / \ P(Y > k  \mid temperature=high) }{P(Y \le k \mid temperature=low)\ / \ P(Y > k 
+\mid temperature=low) } 
+& = \exp\left( 2.34 \right)
+\end{align}$$ 
+
+which means that for any rating level (from non-bitter to bitter) the odds for a **less bitter** rating in comparison to a **more bitter** rating are distictly higher when the grapes of the wine have been crushed with a high temperature, i.e., warmer crushing decreases the chances to be judged as bitter.
+
+For the sequential model the covariable `temperature` has the odds ratio
+
+$$\begin{align}
+\frac{P(Y = k \mid Y \ge k, temperature=high)\ / \ P( Y > k \mid Y \ge k, temperature=high) }{P(Y = k \mid Y \ge k, temperature=low)\ / \ P(Y > k \mid Y \ge k, temperature=low) } 
+& = \exp\left( 2.19 \right)
+\end{align}$$ 
+
+which means that the odds of stopping the transition to a higher bitterness is greater when the grapes have been crushed under high temperature, i.e., the chances of obtaining higher bitterness levels are lower when the grapes have been crushed when its warm.
+
+# Model selection
+
+We do a model comparison using approximate leave-one-out cross-validation using the [`loo`](https://github.com/stan-dev/loo) package.
+
+```{r}
+do.loo <- function(fit) {
+    ll <- loo::extract_log_lik(fit, merge_chains = FALSE)
+    r_eff <- loo::relative_eff(exp(ll))
+    loo::loo(ll, r_eff = r_eff)
+}
+
+wine_cumulative_loo <- do.loo(wine_fit_cumulative)
+wine_sratio_loo <- do.loo(wine_fit_sratio)
+
+loos <- loo::loo_compare(
+    list(cumulative=wine_cumulative_loo, sequential=wine_sratio_loo)
+)
+
+print(loos, simplify=FALSE)
+```
+
+The expected log predictive density is higher for the sequential model. That's nice, because it demonstrates (as was the goal of this case study) that the sequential response mechanism is preferred for this data set. The improvement is small, but so is the data set.
+
+# References

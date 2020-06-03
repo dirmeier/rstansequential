@@ -1,76 +1,81 @@
-@import url('https://fonts.googleapis.com/css?family=Merriweather|Roboto|Inconsolata');
+@import url('https://fonts.googleapis.com/css?family=Merriweather|Inconsolata|EB+Garamond');
 
 
-t {
-    font-family: "Lucida Console", Monaco, monospace;
+body{
+  font-family:  "Merriweather", serif;
+  font-size: 14.5px;
+  color: black;
+  line-height: 1.86;
+  text-align: justify;
+}
+
+
+h1, h2, h3 {
+  font-family: "Merriweather", serif;
+  font-style: italic;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+
+h1 {
+  font-size: 3rem;
+}
+
+
+h2 {
+  font-size: 2.5rem;
+}
+
+
+h3 {
+  font-size: 2rem;
+}
+
+
+code, pre {
+  font-size: 1.4rem;
 }
 
 
 .title {
-    font-family: "Lucida Console", Monaco, monospace;
-    font-size: 2.5em;
-    text-align: center;
-}
-
-.well {
-    white-space: pre;
-    word-wrap: break-word;
-    margin-top: 1.5rem;
-    margin-bottom: 0;
-}
-
-.MathJax_Display {
-  margin-top: 15px !important;
-  margin-bottom: 15px !important;
-}
-
-text {
-    font-family: "Lucida Console", Monaco, monospace;
-}
-
-body {
-  font-family: "Merriweather", serif;
-  font-size: 1.4rem  !important;
-  color: black  !important;
-  line-height: 1.6  !important;
-  text-align: justify  !important;
+   color: black;
+   font-family: 'Merriweather';
+   margin-bottom: 5%;
+   margin-top: 5%;
+   font-size: 1.5em;
 }
 
 
-h1, h2, h3, h4, h5 {
-    font-family: "Merriweather", serif  !important;
-    margin-top: 5%  !important;
-    margin-bottom: 1%  !important;
-    font-weight: 400 !important;
+.level2, .level1, .level3 {
+  margin-top: 5%
 }
 
-h1 {
-    margin-top: 1em !important;
-    font-size: 3.0rem  !important;
-    line-height: 1.2  !important;
-    letter-spacing: -.1rem  !important;
+
+.tocify {
+  padding-top: 25px;
+  border-radius: 0px;
+  border: 0px;
+  overflow: auto;
+  font-style: italic;
 }
 
-h2 {
-  font-size: 2.5rem  !important;
-    line-height: 1.3  !important;
-    letter-spacing: -.1rem  !important;
+
+.tocify::-webkit-scrollbar {
+  display: none;
 }
 
-h3 {
-    font-size: 2.0rem  !important;
-    line-height: 1.3  !important;
-    letter-spacing: -.1rem  !important;
+
+.list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
+  background-color: white;
+  border-color: #f5f5f5;
+  margin-bottom: 6px;
+  margin-top: 6px;
+  color: #1F407A;
+  font-size: 1.15em;
 }
 
-h4 {
-    font-size: 1.8rem  !important;
-    line-height: 1.35  !important;
-    letter-spacing: -.08rem  !important;
-}
 
-h5 {
-    font-size: 1.8rem  !important;
-    line-height: 1.5  !important;
-    letter-spacing: -.05rem  !important;
+.blue, a {
+  color: #1F407A;
 }

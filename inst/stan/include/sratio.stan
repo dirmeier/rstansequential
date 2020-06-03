@@ -1,4 +1,3 @@
-
 real marg_prob_stop_ratio(int y, real eta, vector c, int K) {
   real val = 0;
   if (y < K) {

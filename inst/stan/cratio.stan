@@ -1,4 +1,3 @@
-
 functions {
 #include /include/cratio.stan
 }
