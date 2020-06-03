@@ -24,3 +24,11 @@ model {
 
   y ~ sratio(X * beta, threshold);
 }
+
+
+generated quantities {
+  vector[N] log_lik;
+  for (i in 1:N) {
+    log_lik[i] = sratio_scalar_lpmf(y[i] | X[i] * beta, threshold);
+  }
+}

@@ -18,7 +18,7 @@ You can find the case study [here](https://dirmeier.github.io/rstansequential/in
 
 ## Installation
 
-You can install `rstansequential` using the latest GitHub 
+For convencience, I wrapped the functions into an R package. You can install `rstansequential` using the latest GitHub 
 [release](https://github.com/dirmeier/rstansequential/releases/):
 
 ```r

@@ -1,17 +1,3 @@
-/*
-    rstansequential is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    rstansequential is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with rstansequential.  If not, see <http://www.gnu.org/licenses/>.
-*/
 
 real marg_prob_cumul_logit(int y, real eta, vector c, int K) {
   real val = 0;
@@ -28,6 +14,7 @@ real marg_prob_cumul_logit(int y, real eta, vector c, int K) {
     return val;
 }
 
+
 real cumulative_lpmf(int[] y, vector eta, vector c) {
   int N = num_elements(y);
   int K = num_elements(c) + 1;
@@ -38,4 +25,10 @@ real cumulative_lpmf(int[] y, vector eta, vector c) {
   }
 
   return lpmf;
+}
+
+
+real cumulative_scalar_lpmf(int y, real eta, vector c) {
+  int K = num_elements(c) + 1;
+  return log(marg_prob_cumul_logit(y, eta, c, K));
 }

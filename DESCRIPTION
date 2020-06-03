@@ -1,12 +1,12 @@
 Package: rstansequential
 Title: Sequential regression models
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: 
     person(given = "Simon",
            family = "Dirmeier",
            role = c("aut", "cre"),
            email = "simon.dirmeier@web.de")
-Description: Fit sequential regression models using Stan
+Description: Fit sequential regression models using Stan. Nothing more.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -27,4 +27,4 @@ LinkingTo:
     RcppEigen (>= 0.3.3.3.0),
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
-SystemRequirements: GNU make
+NeedsCompilation: yes

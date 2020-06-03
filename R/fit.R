@@ -15,15 +15,17 @@
 #' @return returns a \code{\link[rstan]{stanfit}} object
 #'
 #' @examples
-#' data(wine)
-#' fit(rating ~ temperature + (1 | judge), wine, iter = 1000, chains = 2)
+#' \dontrun{
+#'  data(wine)
+#'  fit(rating ~ temperature + (1 | judge), wine, iter = 1000, chains = 2)
+#' }
 #'
 #' @references
-#'  McCullagh, P. (1980), Regression models for ordinal data,
+#'  McCullagh, P (1980), Regression models for ordinal data,
 #' \emph{Journal of the Royal Statistical Society: Series B (Methodological),
 #'  42(2)}
 #'
-#' Tutz, G. (1991), Sequential models in categorical regression,
+#' Tutz, G (1991), Sequential models in categorical regression,
 #'  \emph{Computational Statistics & Data Analysis, 11(3)}
 #'
 fit <- function(formula,

@@ -3,13 +3,12 @@
 make_standata <- function(
   formula,
   data,
-  family = c("cumulative", "sratio", "cratio"))
-  {
+  family = c("cumulative", "sratio", "cratio")) {
   dat <- brms::make_standata(formula, data, match.arg(family))
 
   stan.dat <- list(
     N = dat$N,
-    K = dat$K,
+    K = length(unique(dat$Y)),
     P = ncol(dat$X),
     X = dat$X,
     y = dat$Y
@@ -25,7 +24,7 @@ make_standata <- function(
     Xi <- do.call("cbind", dat[grep("Z_", names(dat))])
     Zi <- Matrix::t(Matrix::KhatriRao(Ji, t(Xi)))
 
-    stan.dat$Z <- Zi
+    stan.dat$Z <- as.matrix(Zi)
     stan.dat$Q <- ncol(Zi)
     stan.dat$n_coef <- ncol(Xi)
     stan.dat$n_levels <- length(levels(f))
