@@ -26,8 +26,7 @@ Infers posterior distributions of the parameters
 }
 \examples{
 \dontrun{
- data(wine)
- fit(rating ~ temperature + (1 | judge), wine, iter = 1000, chains = 2)
+fit(rating ~ temperature + (1 | judge), data = wine, iter = 1000, chains = 2)
 }
 
 }

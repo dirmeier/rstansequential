@@ -5,7 +5,7 @@ body{
   font-family:  "Merriweather", serif;
   font-size: 14.5px;
   color: black;
-  line-height: 1.86;
+  line-height: 1.6;
   text-align: justify;
 }
 
@@ -15,6 +15,7 @@ h1, h2, h3 {
   font-style: italic;
   font-weight: 400;
   margin-bottom: 2rem;
+  margin-top: 2rem;
 }
 
 
@@ -42,7 +43,7 @@ code, pre {
    color: black;
    font-family: 'Merriweather';
    margin-bottom: 5%;
-   margin-top: 5%;
+   margin-top: 6%;
    font-size: 1.5em;
 }
 

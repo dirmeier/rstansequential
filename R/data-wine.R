@@ -15,7 +15,8 @@
 #'  \item{judge}{factor that represents the person who drank the wine}
 #' }
 #'
-#' @usage data(wine)
+#' @usage
+#'  data(wine)
 #'
 #' @source
 #'  Randall, JH (1989), The Analysis of Sensory Data by

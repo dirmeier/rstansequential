@@ -369,4 +369,15 @@ print(loos, simplify=FALSE)
 
 The expected log predictive density is higher for the sequential model. That's nice, because it demonstrates (as was the goal of this case study) that the sequential response mechanism is preferred for this data set. The improvement is small, but so is the data set.
 
+# Acknowledgements
+
+Thanks to Jana Linnik for introducing me to sequential regression models and for making me aware that many biological data sets can be more appropriately modelled 
+using a sequential response mechanism.
+
+# License
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a>
+
+The case study is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+
 # References

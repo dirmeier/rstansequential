@@ -1,9 +1,9 @@
 
 #' @noRd
 make_standata <- function(
-  formula,
-  data,
-  family = c("cumulative", "sratio", "cratio")) {
+                          formula,
+                          data,
+                          family = c("cumulative", "sratio", "cratio")) {
   dat <- brms::make_standata(formula, data, match.arg(family))
 
   stan.dat <- list(
