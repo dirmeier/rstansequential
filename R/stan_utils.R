@@ -1,5 +1,8 @@
 
 #' @noRd
+#' @importFrom brms make_standata
+#' @importFrom Matrix t KhatriRao
+#' @importFrom methods as
 make_standata <- function(
                           formula,
                           data,
