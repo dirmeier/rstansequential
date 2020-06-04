@@ -1,7 +1,9 @@
 ---
 title: "On sequential regression models"
+author: "Simon Dirmeier <simon.dirmeier @ web.de>"
+date: "June 2020"
 bibliography: ./references.bib
-link-citations: false
+link-citations: true
 output:
   html_document:
     theme: lumen
@@ -21,7 +23,9 @@ knitr::opts_chunk$set(comment=NA, warning = FALSE, error = FALSE, fig.align = "c
 
 Sequential regression models are a a special case of ordinal models, where the different categories can only be reached one after another, i.e., sequentially. Sequential response mechanisms frequently occur in biological and medical settings, for example titer data or MIC data, but haven't received much attention in applied research. In this case study, we analyse an ordinal data sets for which an underlying sequential response mechanism can be assumed and compare the sequential model to the more common cumulative model.
 
-The relevant code can be found [here](https://github.com/dirmeier/rstansequential). It is an R-package that wraps the functions for convencience. The package relies on [`rstan`](https://github.com/stan-dev/rstan/) for inference.
+The relevant code that is used in this case study is implemented as an R-package. The package relies on [`rstan`](https://github.com/stan-dev/rstan/) for inference and can be found [here](https://github.com/dirmeier/rstansequential).
+
+Feedback and comments are welcome!
 
 ```{r}
 suppressMessages({
@@ -379,5 +383,11 @@ using a sequential response mechanism.
 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a>
 
 The case study is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+
+# Session info
+
+```{r}
+sessionInfo()
+```
 
 # References

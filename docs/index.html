@@ -9,6 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Simon Dirmeier &lt;simon.dirmeier @ web.de&gt;" />
 
 
 <title>On sequential regression models</title>
@@ -1429,36 +1430,46 @@ src: local('Merriweather Regular'), local('Merriweather-Regular'), url(data:font
 }
 body{
 font-family: "Merriweather", serif;
-font-size: 14.5px;
+font-size: 14px;
 color: black;
 line-height: 1.6;
 text-align: justify;
 }
 h1, h2, h3 {
-font-family: "Merriweather", serif;
 font-style: italic;
 font-weight: 400;
 margin-bottom: 2rem;
 margin-top: 2rem;
 }
 h1 {
-font-size: 3rem;
-}
-h2 {
 font-size: 2.5rem;
 }
-h3 {
+h2 {
 font-size: 2rem;
+}
+h3 {
+font-size: 1.8rem;
+}
+h4 {
+font-style: italic;
+color: black;
+font-family: "Merriweather", serif;
+font-size: 15px;
+}
+h4.date {
+margin-bottom: 3%;
 }
 code, pre {
 font-size: 1.4rem;
 }
+h1.title {
+font-size: 3rem;
+}
 .title {
 color: black;
 font-family: 'Merriweather';
-margin-bottom: 5%;
+margin-bottom: 3%;
 margin-top: 6%;
-font-size: 1.5em;
 }
 .level2, .level1, .level3 {
 margin-top: 5%
@@ -1481,7 +1492,7 @@ margin-top: 6px;
 color: #1F407A;
 font-size: 1.15em;
 }
-.blue, a {
+.blue, a, a:hover {
 color: #1F407A;
 }
 </style>
@@ -1673,12 +1684,15 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">On sequential regression models</h1>
+<h4 class="author">Simon Dirmeier &lt;simon.dirmeier @ web.de&gt;</h4>
+<h4 class="date">June 2020</h4>
 
 </div>
 
 
 <p>Sequential regression models are a a special case of ordinal models, where the different categories can only be reached one after another, i.e., sequentially. Sequential response mechanisms frequently occur in biological and medical settings, for example titer data or MIC data, but haven’t received much attention in applied research. In this case study, we analyse an ordinal data sets for which an underlying sequential response mechanism can be assumed and compare the sequential model to the more common cumulative model.</p>
-<p>The relevant code can be found <a href="https://github.com/dirmeier/rstansequential">here</a>. It is an R-package that wraps the functions for convencience. The package relies on <a href="https://github.com/stan-dev/rstan/"><code>rstan</code></a> for inference.</p>
+<p>The relevant code that is used in this case study is implemented as an R-package. The package relies on <a href="https://github.com/stan-dev/rstan/"><code>rstan</code></a> for inference and can be found <a href="https://github.com/dirmeier/rstansequential">here</a>.</p>
+<p>Feedback and comments are welcome!</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">suppressMessages</span>({</a>
 <a class="sourceLine" id="cb1-2" data-line-number="2">  <span class="kw">library</span>(tidyverse)</a>
 <a class="sourceLine" id="cb1-3" data-line-number="3">  <span class="kw">library</span>(colorspace)</a>
@@ -1693,7 +1707,7 @@ div.tocify {
 <a class="sourceLine" id="cb1-12" data-line-number="12"><span class="kw">options</span>(<span class="dt">mc.cores =</span> <span class="kw">max</span>(<span class="dv">1</span>, parallel<span class="op">::</span><span class="kw">detectCores</span>() <span class="op">-</span><span class="st"> </span><span class="dv">1</span>))</a></code></pre></div>
 <div id="cumulative-models" class="section level1">
 <h1>Cumulative models</h1>
-<p>The conventional cumulative model introduced by <span class="citation">McCullagh (1980)</span> is probably the most frequently encountered ordinal regression model. It assumes a response variable <span class="math inline">\(Y\)</span> with <span class="math inline">\(K\)</span> ordered categories <span class="math inline">\(k = 1, \dots, K\)</span> and ordinal probabilities <span class="math inline">\(\pi_1, \dots, \pi_K\)</span>. The model is motivated by a latent continuous random process <span class="math inline">\(\tilde{Y}\)</span></p>
+<p>The conventional cumulative model introduced by <span class="citation">McCullagh (<a href="#ref-McCullagh1980">1980</a>)</span> is probably the most frequently encountered ordinal regression model. It assumes a response variable <span class="math inline">\(Y\)</span> with <span class="math inline">\(K\)</span> ordered categories <span class="math inline">\(k = 1, \dots, K\)</span> and ordinal probabilities <span class="math inline">\(\pi_1, \dots, \pi_K\)</span>. The model is motivated by a latent continuous random process <span class="math inline">\(\tilde{Y}\)</span></p>
 <p><span class="math display">\[\begin{align}
 \tilde{Y} &amp; = -\mathbf{x}^T \boldsymbol \beta + \epsilon \\
 \epsilon &amp; \sim f
@@ -1733,7 +1747,7 @@ F^{-1}\left( P(Y \le k) \right) = \log \frac{P(Y \le k)}{1 - P(Y \le k)} = \thet
 </div>
 <div id="sequential-models" class="section level1">
 <h1>Sequential models</h1>
-<p>In some applications if makes more sense to assume that the categories can only be reached sequentially. For instance, to gain the title of “PhD” in the ordering of degrees “Bachelor &lt; Master &lt; PhD” first Bacherlor and Master titles have to be obtained. Analogously, if the response variable is the number of guitars someone owns, one can assume that the guitars have been bought successively, and not, as a cumulative model assumes, all at the same time. Thus, the number of guitars can be considered to be a “sequential” ordinal random variable. The sequential model has (afaik) been introduced by <span class="citation">Tutz (1991)</span>. In the literature, multiple names has been used for sequential regression models. Tutz also calls them <em>continuation ratio</em> models. <span class="citation">Yee (2010)</span> calls them <em>stopping ratio</em> models which seems to be a better fitting name.</p>
+<p>In some applications if makes more sense to assume that the categories can only be reached sequentially. For instance, to gain the title of “PhD” in the ordering of degrees “Bachelor &lt; Master &lt; PhD” first Bacherlor and Master titles have to be obtained. Analogously, if the response variable is the number of guitars someone owns, one can assume that the guitars have been bought successively, and not, as a cumulative model assumes, all at the same time. Thus, the number of guitars can be considered to be a “sequential” ordinal random variable. The sequential model has (afaik) been introduced by <span class="citation">Tutz (<a href="#ref-Tutz1991">1991</a>)</span>. In the literature, multiple names has been used for sequential regression models. Tutz also calls them <em>continuation ratio</em> models. <span class="citation">Yee (<a href="#ref-Yee2010">2010</a>)</span> calls them <em>stopping ratio</em> models which seems to be a better fitting name.</p>
 <p>As in the cumulative model, we assume a latent continuous process <span class="math inline">\(\tilde{Y} = - \mathbf{x}^T \boldsymbol \beta + \epsilon\)</span>. For the sequential model it relates to the observed random variable <span class="math inline">\(Y\)</span> via</p>
 <p><span class="math display">\[\begin{align}
 P(Y =  k \mid Y \ge k) =  F(\theta_k + \mathbf{x}^T \boldsymbol \beta) \\
@@ -1765,7 +1779,7 @@ F^{-1}\left( Y =  k \mid Y \ge k \right) = \log \frac{P(Y =  k \mid Y \ge k)}{1 
 </div>
 <div id="wine-tasting-data" class="section level1">
 <h1>Wine tasting data</h1>
-<p>We apply the two models above to a wine data set from <span class="citation">Randall (1989)</span> and <span class="citation">Tutz and Hennevogl (1996)</span> where nine judges assessed the bitterness of wine. When tasting the wines judges gave a statement about the bitterness of wine on a scale from least to most bitter. I extracted the data from the papers and put added them to the <code>rstansequential</code> package. Let’s visualize the data first.</p>
+<p>We apply the two models above to a wine data set from <span class="citation">Randall (<a href="#ref-Randall1989">1989</a>)</span> and <span class="citation">Tutz and Hennevogl (<a href="#ref-Tutz1996">1996</a>)</span> where nine judges assessed the bitterness of wine. When tasting the wines judges gave a statement about the bitterness of wine on a scale from least to most bitter. I extracted the data from the papers and put added them to the <code>rstansequential</code> package. Let’s visualize the data first.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">data</span>(wine)</a>
 <a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw">head</span>(wine)</a></code></pre></div>
 <pre><code># A tibble: 6 x 5
@@ -2002,7 +2016,7 @@ gamma[8]     -0.26    0.02 0.68 -1.68 -0.67 -0.23  0.17  1.00  1956    1
 gamma[9]     -0.50    0.02 0.71 -1.95 -0.95 -0.46 -0.03  0.83  2030    1
 sigma[1]      1.05    0.01 0.22  0.61  0.91  1.04  1.19  1.51   919    1
 
-Samples were drawn using NUTS(diag_e) at Thu Jun  4 01:42:46 2020.
+Samples were drawn using NUTS(diag_e) at Thu Jun  4 15:51:57 2020.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -2053,7 +2067,7 @@ gamma[8]     -0.30    0.01 0.59 -1.51 -0.65 -0.27  0.08  0.82  2149    1
 gamma[9]     -0.50    0.01 0.62 -1.78 -0.88 -0.46 -0.09  0.67  2045    1
 sigma[1]      0.99    0.01 0.21  0.60  0.85  0.98  1.11  1.42  1103    1
 
-Samples were drawn using NUTS(diag_e) at Thu Jun  4 01:42:50 2020.
+Samples were drawn using NUTS(diag_e) at Thu Jun  4 15:52:01 2020.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).</code></pre>
@@ -2146,6 +2160,71 @@ cumulative  -0.6       0.7   -87.2      4.7        12.2   1.2    174.3   9.4   <
 <h1>License</h1>
 <p><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="data:image/png;base64,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" /></a></p>
 <p>The case study is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</p>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session info</h1>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" data-line-number="1"><span class="kw">sessionInfo</span>()</a></code></pre></div>
+<pre><code>R version 4.0.0 (2020-04-24)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 19.10
+
+Matrix products: default
+BLAS/LAPACK: /usr/lib/x86_64-linux-gnu/libopenblasp-r0.3.7.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=de_CH.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=de_CH.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=de_CH.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=de_CH.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] rstansequential_0.1.0 loo_2.2.0             rstan_2.19.3         
+ [4] StanHeaders_2.19.2    bayesplot_1.7.1       patchwork_1.0.0      
+ [7] colorspace_1.4-1      forcats_0.5.0         stringr_1.4.0        
+[10] dplyr_0.8.5           purrr_0.3.4           readr_1.3.1          
+[13] tidyr_1.0.2           tibble_3.0.1          ggplot2_3.3.0        
+[16] tidyverse_1.3.0      
+
+loaded via a namespace (and not attached):
+  [1] ellipsis_0.3.0       ggridges_0.5.2       brms_2.12.0         
+  [4] rsconnect_0.8.16     markdown_1.1         base64enc_0.1-3     
+  [7] fs_1.4.1             rstudioapi_0.11      farver_2.0.3        
+ [10] DT_0.13              fansi_0.4.1          mvtnorm_1.1-0       
+ [13] lubridate_1.7.8      xml2_1.3.2           bridgesampling_1.0-0
+ [16] codetools_0.2-16     knitr_1.28           shinythemes_1.1.2   
+ [19] jsonlite_1.6.1       broom_0.5.6          dbplyr_1.4.3        
+ [22] shiny_1.4.0.2        compiler_4.0.0       httr_1.4.1          
+ [25] backports_1.1.6      assertthat_0.2.1     Matrix_1.2-18       
+ [28] fastmap_1.0.1        cli_2.0.2            later_1.0.0         
+ [31] htmltools_0.4.0      prettyunits_1.1.1    tools_4.0.0         
+ [34] igraph_1.2.5         coda_0.19-3          gtable_0.3.0        
+ [37] glue_1.4.0           reshape2_1.4.4       ggthemes_4.2.0      
+ [40] Rcpp_1.0.4.6         cellranger_1.1.0     vctrs_0.2.4         
+ [43] nlme_3.1-147         crosstalk_1.1.0.1    xfun_0.13           
+ [46] ps_1.3.2             rvest_0.3.5          mime_0.9            
+ [49] miniUI_0.1.1.1       lifecycle_0.2.0      gtools_3.8.2        
+ [52] zoo_1.8-8            scales_1.1.0         colourpicker_1.0    
+ [55] hms_0.5.3            promises_1.1.0       Brobdingnag_1.2-6   
+ [58] parallel_4.0.0       inline_0.3.15        shinystan_2.5.0     
+ [61] yaml_2.2.1           gridExtra_2.3        stringi_1.4.6       
+ [64] dygraphs_1.1.1.6     checkmate_2.0.0      pkgbuild_1.0.7      
+ [67] rlang_0.4.5          pkgconfig_2.0.3      matrixStats_0.56.0  
+ [70] evaluate_0.14        lattice_0.20-41      labeling_0.3        
+ [73] rstantools_2.0.0     htmlwidgets_1.5.1    processx_3.4.2      
+ [76] tidyselect_1.0.0     plyr_1.8.6           magrittr_1.5        
+ [79] R6_2.4.1             generics_0.0.2       DBI_1.1.0           
+ [82] pillar_1.4.3         haven_2.2.0          withr_2.2.0         
+ [85] xts_0.12-0           abind_1.4-5          modelr_0.1.6        
+ [88] crayon_1.3.4         utf8_1.1.4           rmarkdown_2.1       
+ [91] grid_4.0.0           readxl_1.3.1         callr_3.4.3         
+ [94] threejs_0.3.3        reprex_0.3.0         digest_0.6.25       
+ [97] xtable_1.8-4         httpuv_1.5.2         stats4_4.0.0        
+[100] munsell_0.5.0        shinyjs_1.1         </code></pre>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
